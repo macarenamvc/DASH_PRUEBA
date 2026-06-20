@@ -1,25 +1,25 @@
-# Import packages
-from dash import Dash, html, dcc
-import dash_ag_grid as dag
-import pandas as pd
+from dash import Dash, html, dcc, callback, Output, Input
 import plotly.express as px
+import pandas as pd
 
-# Incorporate data
-df = pd.read_csv('https://raw.githubusercontent.com/plotly/datasets/master/gapminder2007.csv')
+df = pd.read_csv('https://raw.githubusercontent.com/plotly/datasets/master/gapminder_unfiltered.csv')
 
-# Initialize the app
 app = Dash()
 
-# App layout
+# Requires Dash 2.17.0 or later
 app.layout = [
-    html.Div(children='My First App with Data and a Graph'),
-    dag.AgGrid(
-        rowData=df.to_dict('records'),
-        columnDefs=[{"field": i} for i in df.columns]
-    ),
-    dcc.Graph(figure=px.histogram(df, x='continent', y='lifeExp', histfunc='avg'))
+    html.H1(children='Title of Dash App', style={'textAlign':'center'}),
+    dcc.Dropdown(df.country.unique(), 'Canada', id='dropdown-selection'),
+    dcc.Graph(id='graph-content')
 ]
 
-# Run the app
+@callback(
+    Output('graph-content', 'figure'),
+    Input('dropdown-selection', 'value')
+)
+def update_graph(value):
+    dff = df[df.country==value]
+    return px.line(dff, x='year', y='pop')
+
 if __name__ == '__main__':
     app.run(debug=True)
